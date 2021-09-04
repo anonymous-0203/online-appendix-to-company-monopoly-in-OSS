@@ -1,8 +1,7 @@
 # online-appendix-to-company-monopoly-in-OSS 
 This repository is used to store the data, scripts and results of the study "company monopoly in OSS".
 
-Dataset: The original dataset used in the work can be found at:
-https://github.com/YuxiaZhang-BIT/Commercial-Participation-in-OSS
+Dataset: The original dataset used in the work can be found at in our reference.
 
 Description of directories:
 
