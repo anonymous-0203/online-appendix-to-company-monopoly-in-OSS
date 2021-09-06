@@ -11,4 +11,3 @@ Code: process.py is the scripts of Python to produce and visualize the answers f
 
 Survey: Surveys.pdf is the questionnaires we used to validate our measurement of company monopoly from developers in OpenStack.
 
-Results: This folder contains the detailed results of RQ1, RQ2, RQ3.
