@@ -3,7 +3,6 @@
 from __future__ import division
 import os
 import numpy as np
-import pandas as pd
 import pymysql
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -12,62 +11,94 @@ import pandas as pd
 from scipy import stats
 from scipy.stats import norm
 
-path = os.path.abspath('/Users/***/Desktop/monopoly/code/')
+# sns.set_theme(style="white")
+# sns.set_palette("husl")
+
+path = os.path.abspath('/Users/Yuxia/Desktop/monopoly/code/')
 conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='123456', db='openstack2019', charset='utf8')
 cursor = conn.cursor()
 
-monopoly_version = np.loadtxt(path + "/data/monopoly_version.csv", delimiter=",", dtype=np.str)
+# 'repo', 'num_com', 'sum_cmt', 'max_com', 'max_com_cmt', 'max_P', 'is_only_one', 'is_dominate'
+domi_overall = np.loadtxt(path + "/data_fse/domination_overall1.csv", delimiter=",", dtype=str)
+print('domi_overall', domi_overall)
 
-# repo, ver, real_ver, num_cmt, com, num_ccmt, ratio, monopoly
-df = pd.DataFrame(monopoly_version, columns=['repo', 'Version', 'N-version', 'num_cmt', 'com', 'num_ccmt', 'Ratio', 'monopoly'])
-df['N-version'] = df['N-version'].astype(int)
-df['Version'] = df['Version'].astype(int)
-df['Ratio'] = df['Ratio'].astype(float)
-print('df', df)
+domi_ratio = []
+for i in domi_overall:
+    if i[7] == 'Y':
+        domi_ratio.append(float(i[5]))
+print(median(domi_ratio))
 
+# domi_overall.remove['repo', 'num_com', 'sum_cmt', 'max_com', 'max_com_cmt', 'max_P', 'is_only_one', 'is_dominate']
+df_overall = pd.DataFrame(domi_overall, columns=['repo', 'num_com', 'sum_cmt', 'max_com', 'max_com_cmt',
+                                                 'Max Code Authorship', 'is_only_one', 'is_dominate'])
+df_overall['Max Code Authorship'] = df_overall['Max Code Authorship'].astype(float)
 
-tips = sns.load_dataset("tips")
-print('type of tips', tips)
-print('tip', tips)
-
-
-figsize = 10, 4
-fig, ax = plt.subplots(figsize=figsize)
-ax = sns.boxplot(x="N-version", y="Ratio", data=df, palette="coolwarm", showmeans=True)
-ax.text(18.2, 0.485, "0.50", color='red')
-plt.hlines(0.5, -0.5, 18.2, colors="black", linestyles="dashed")
-plt.savefig(path + "/pic/distribution_of_ratio_over_survival_time.pdf", format='pdf')
-plt.show()
-
-figsize = 10, 4
-fig, ax = plt.subplots(figsize=figsize)
-sns.boxplot(x="Version", y="Ratio", data=df, palette="coolwarm", showmeans=True)
-plt.ylabel("Ratio")
-ax.text(18.2, 0.485, "0.50", color='red')
-plt.hlines(0.5, -0.5, 18.2, colors="black", linestyles="dashed")
-plt.savefig(path + "/pic/distribution_of_ratio_over_version.pdf", format='pdf')
-plt.show()
-
-# calculate the overall ratio of monopoly in all the repositories
-monopoly_overall = np.loadtxt(path + "/data/monopoly_overall.csv", delimiter=",", dtype=np.str)
-# repo, num_cmt, com, num_ccmt, ratio, monopoly
-df_overall = pd.DataFrame(monopoly_overall, columns=['repo', 'num_cmt', 'com', 'num_ccmt', 'Ratio', 'monopoly'])
-df_overall['Ratio'] = df_overall['Ratio'].astype(float)
-print('df_overall', df_overall.head())
-print('ratio\n', df_overall['Ratio'].sample(20))
 figsize = 6, 4
 fig, ax = plt.subplots(figsize=figsize)
-sns.histplot(data=df_overall, x='Ratio', kde=True, bins=10)
-plt.vlines(0.5, 0, 200, colors="black", linestyles="dashed")
-ax.text(0.4, 220, "Ratio = 0.50", color='red')
-plt.savefig(path + "/pic/ratio_in_repo_overall.pdf", format='pdf')
+# plt.grid('off')
+# sns.set_style = "white"
+sns.histplot(data=df_overall, x='Max Code Authorship', kde=False, bins=[0, 0.2, 0.4, 0.6, 0.8, 1], color='#5B9BD5', alpha=0.8)
+# plt.hist(data=df_overall, x='Max Code Authorship', bins=10, color='#5B9BD5')
+plt.vlines(0.5, 0, 360, colors="black", linestyles="dashed")
+# plt.xticks(range(1))
+ax.text(0.1, 345, "Code Authorship = 0.5", color='red')
+plt.ylabel('Number of repositories')
+plt.savefig(path + "/pic_fse/Max Code Ownership_overall.pdf", format='pdf')
 plt.show()
 
-# display the distribution of companies with different number of monopolized repositories in each version
-# this figure was drawn by excel
+# 'repo', 'version', 'num_com', 'sum_cmt', 'max_com', 'max_com_cmt', 'max_P', 'is_only_one', 'is_dominate'
+domi_version = np.loadtxt(path + "/data_fse/domination_version1.csv", delimiter=",", dtype=str)
+df_version = pd.DataFrame(domi_version, columns=['repo', 'repo_type', 'version', 'real_ver', 'num_com', 'sum_cmt',
+                                                 'max_com', 'max_com_cmt', 'max_P', 'is_only_one', 'is_dominate'])
+df_version['version'] = df_version['version'].astype(int)
+ratios = []
+for i in range(6, 19):
+    print(str(i))
+    sum_repo = len(df_version.loc[(df_version.version == i)])
+    domi_repo = len(df_version.loc[(df_version.version == i) & (df_version.is_dominate == 'Y')])
 
+    ratio = domi_repo/sum_repo
+    ratios.append([i, domi_repo, sum_repo, ratio])
 
+df_ratios = pd.DataFrame(ratios, columns=['Version', 'Num_domi_repos', 'Num_all_repos',  'Percentage'])
+print('df_ratios', df_ratios)
 
+print('df_ratios.filter(items=[\'Version\'])', df_ratios.filter(items=['Version']))
+print(median(df_ratios['Percentage'].values))
 
+plt.rcParams['figure.figsize'] = (6, 4)
+# plt.grid(zorder=0)  # 画网格
+fig, ax1 = plt.subplots()
+ax1.grid(zorder=0)
+# 柱形的宽度
+width = 0.4
+# 柱形的间隔
+x1_list = []
+x2_list = []
+x3_list = []
+for i in range(6, 19):
+    x1_list.append(i)
+    x2_list.append(i + width)
+    x3_list.append(i + width/2)
 
+# sns.set_style("white")
+# 绘制柱形图1
+b1 = ax1.bar(x1_list, np.array(df_ratios['Num_domi_repos'].values), width=width, color='#5B9BD5', zorder=10)
+# 绘制柱形图2
+b2 = ax1.bar(x2_list, df_ratios['Num_all_repos'], width=width, color='#70AD47', zorder=10)
+plt.legend(loc='upper left', labels=['Dominated', 'Total'], bbox_to_anchor=(0, 1.02), frameon=False)
+plt.xticks([index + 0.2 for index in x1_list], ["6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"])
+ax1.tick_params(axis='y', colors='black')
+# 绘制折线图 --双Y轴
+ax2 = ax1.twinx()
+b3 = ax2.plot(x3_list, df_ratios['Percentage'], color='black', marker='o', linewidth=1, markersize=4)
+# 坐标轴标签设置
+ax1.set_xlabel('Version', fontsize=12)
+ax1.set_ylabel('Number of repositories', fontsize=12)
+ax2.set_ylabel('Domination Percentage', fontsize=12)
+ax2.axis(ymin=0, ymax=1)
+ax2.tick_params(axis='y', colors='black')
+plt.legend(loc='upper left', labels=['Percentage'], bbox_to_anchor=(0, 0.9), frameon=False)
+plt.savefig(path + "/pic_fse/Domination Percentage_each_ver.pdf", format='pdf')
+plt.show()
 
