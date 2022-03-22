@@ -5,7 +5,7 @@ Dataset: The original dataset used in the work can be found at in our reference.
 
 Description of directories:
 
-Data: RQ1.csv, RQ2.csv, RQ3.csv are used to answer the three research questions in our study respectively.
+Data: this filepath containes the data that are used to answer the three research questions in our study respectively.
 
 Code: The scripts of Python produce and visualize the answers for the research questions; survival analysis is the scripts of R language for fitting the cox model.
 
